@@ -37,7 +37,7 @@ export default function Index() {
   const [currentUser, setCurrentUser] = useState<User>({ id: '1', username: 'Player', activatedCodes: 0, rank: 1 });
   const { toast } = useToast();
 
-  const [codes] = useState<Code[]>([
+  const [codes, setCodes] = useState<Code[]>([
     { id: '1', code: 'WELCOME2024', name: 'Добро пожаловать', description: 'Стартовый бонус для новых игроков', uses: 234, maxUses: 1000, createdBy: 'Admin' },
     { id: '2', code: 'POWERGAMER', name: 'Сила игрока', description: 'Бонус для активных пользователей', uses: 156, maxUses: 500, createdBy: 'Admin' },
     { id: '3', code: 'EPICCODE', name: 'Эпический код', description: 'Редкий код с особыми наградами', uses: 89, maxUses: 200, createdBy: 'Admin' }
@@ -63,6 +63,21 @@ export default function Index() {
 
     const foundCode = codes.find(code => code.code === inputCode.toUpperCase());
     if (foundCode) {
+      if (foundCode.uses >= foundCode.maxUses) {
+        toast({
+          title: "Код исчерпан",
+          description: "Код больше не может быть использован",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setCodes(prev => prev.map(code => 
+        code.id === foundCode.id 
+          ? { ...code, uses: code.uses + 1 }
+          : code
+      ));
+      
       toast({
         title: "Код активирован! 🎉",
         description: `Вы активировали код: ${foundCode.name}`,
@@ -98,9 +113,23 @@ export default function Index() {
       return;
     }
 
+    const generatedCode = `CODE${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+    
+    const newCode: Code = {
+      id: Date.now().toString(),
+      code: generatedCode,
+      name: newCodeData.name,
+      description: newCodeData.description,
+      uses: 0,
+      maxUses: newCodeData.maxUses,
+      createdBy: 'Player'
+    };
+
+    setCodes(prev => [...prev, newCode]);
+
     toast({
       title: "Код создан! ✨",
-      description: `Новый код "${newCodeData.name}" успешно создан`,
+      description: `Новый код "${generatedCode}" создан успешно!`,
       variant: "default"
     });
 
