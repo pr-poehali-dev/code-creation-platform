@@ -28,6 +28,7 @@ export default function Index() {
   const [activeTab, setActiveTab] = useState('home');
   const [inputCode, setInputCode] = useState('');
   const [newCodeData, setNewCodeData] = useState({
+    code: '',
     name: '',
     description: '',
     maxUses: 100
@@ -113,11 +114,28 @@ export default function Index() {
       return;
     }
 
-    const generatedCode = `CODE${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+    if (!newCodeData.code) {
+      toast({
+        title: "Ошибка",
+        description: "Введите код для создания",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Проверяем, не существует ли уже такой код
+    if (codes.find(code => code.code === newCodeData.code.toUpperCase())) {
+      toast({
+        title: "Ошибка",
+        description: "Код уже существует",
+        variant: "destructive"
+      });
+      return;
+    }
     
     const newCode: Code = {
       id: Date.now().toString(),
-      code: generatedCode,
+      code: newCodeData.code.toUpperCase(),
       name: newCodeData.name,
       description: newCodeData.description,
       uses: 0,
@@ -129,11 +147,11 @@ export default function Index() {
 
     toast({
       title: "Код создан! ✨",
-      description: `Новый код "${generatedCode}" создан успешно!`,
+      description: `Новый код "${newCodeData.code.toUpperCase()}" создан успешно!`,
       variant: "default"
     });
 
-    setNewCodeData({ name: '', description: '', maxUses: 100 });
+    setNewCodeData({ code: '', name: '', description: '', maxUses: 100 });
     setMasterCode('');
   };
 
@@ -335,6 +353,12 @@ export default function Index() {
                       <Icon name="CheckCircle" size={16} className="mr-2" />
                       <span className="font-orbitron text-sm">Доступ разрешен</span>
                     </div>
+                    <Input
+                      placeholder="Введите код (например: MYCODE123)..."
+                      value={newCodeData.code}
+                      onChange={(e) => setNewCodeData({...newCodeData, code: e.target.value})}
+                      className="font-mono text-lg terminal-glow"
+                    />
                     <Input
                       placeholder="Название кода..."
                       value={newCodeData.name}
